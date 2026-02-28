@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Verdict • Platformă decizională</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Design Premium - Dark & Light Mode */
+        :root {
+            --bg-base: #0a0c10;
+            --bg-surface: #111318;
+            --bg-elevated: #1a1d24;
+            --accent: #8b5cf6;
+            --accent-light: #a78bfa;
+            --accent-glow: rgba(139, 92, 246, 0.25);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border: #2a2e36;
+            --border-hover: #4b5563;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --radius: 16px;
+            --radius-lg: 24px;
+            --transition: all 0.2s ease;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 10px 30px var(--accent-glow);
+        }
+
+        body.light-mode {
+            --bg-base: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-elevated: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --border-hover: #94a3b8;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(17, 19, 24, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        body.light-mode .navbar { background: rgba(255, 255, 255, 0.8); }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-light), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        .nav-links a:hover {
+            color: var(--text-primary);
+            background: var(--bg-elevated);
+        }
+        .nav-links a.active {
+            color: var(--accent);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: 1rem;
+            padding-left: 1rem;
+            border-left: 1px solid var(--border);
+        }
+        .user-info img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            object-fit: cover;
+        }
+        .btn-icon {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-icon:hover {
+            background: var(--bg-elevated);
+            color: var(--accent);
+        }
+
+        /* Container & Pages */
+        .container { max-width: 1280px; margin: 0 auto; padding: 2rem; }
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .page-title i { color: var(--accent); }
+
+        /* Grid știri */
+        .grid-cazuri {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        .card-caz {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+        .card-caz:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: var(--shadow-hover);
+        }
+        .card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-elevated);
+        }
+        .card-content { padding: 1.5rem; display: flex; flex-direction: column; flex: 1; }
+        .sursa {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+        .card-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        .card-header h3 a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .card-header h3 a:hover { color: var(--accent); }
+        .description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            flex: 1;
+        }
+        .btn-group { display: flex; gap: 0.8rem; }
+        .btn-vot {
+            flex: 1;
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 0.7rem;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-vot:hover { background: var(--bg-elevated); }
+        .btn-vot.selected-opt { background: rgba(16, 185, 129, 0.1); border-color: var(--success); color: var(--success); }
+        .btn-vot.selected-prov { background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: var(--danger); }
+
+        /* Statistici */
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        .stat-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* Butoane primare */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 30px;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px var(--accent-glow);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+
+        /* Input-uri */
+        input, textarea, select {
+            width: 100%;
+            background: var(--bg-base);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+
+        /* Hartă interactivă */
+        .harta-container {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 3rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .harta-container::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 60%);
+            animation: rotate 30s linear infinite;
+            z-index: 0;
+        }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .nod-btn {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            padding: 1rem 2rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            z-index: 1;
+            backdrop-filter: blur(4px);
+        }
+        .nod-btn:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            transform: scale(1.05);
+        }
+
+        /* Povești */
+        .stories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .story-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: var(--transition);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .story-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+        .story-author {
+            font-size: 0.8rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .story-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        .story-excerpt {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            flex: 1;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+        .story-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .story-meta i { color: var(--accent); margin-right: 0.2rem; }
+
+        /* Modal povești */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 1rem;
+        }
+        .modal-content {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+        }
+        .modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: var(--bg-surface);
+            z-index: 10;
+        }
+        .modal-header h2 { font-size: 1.5rem; word-break: break-word; }
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .modal-close:hover { color: var(--danger); }
+        .modal-body { padding: 2rem; }
+
+        .comment-item {
+            padding: 1rem;
+            background: var(--bg-elevated);
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+        .comment-author {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--accent);
+            margin-bottom: 0.3rem;
+        }
+        .comment-content {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .comment-delete {
+            background: transparent;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 0.5rem;
+        }
+        .comment-delete:hover { background: var(--danger); color: #fff; }
+
+        .fact-card {
+            background: var(--bg-elevated);
+            border-left: 4px solid var(--accent);
+            padding: 1.5rem;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            margin-bottom: 1rem;
+        }
+
+        /* Profil */
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid var(--accent);
+            object-fit: cover;
+        }
+        .upload-avatar-btn {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* Loading */
+        .loading-spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        footer {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><i class="fas fa-microchip"></i> AI VERDICT</div>
+        <div class="nav-links">
+            <a class="nav-link active" data-page="acasa">Acasă</a>
+            <a class="nav-link" data-page="mate">Matematică</a>
+            <a class="nav-link" data-page="info">Informatică</a>
+            <a class="nav-link" data-page="bio">Biologie</a>
+            <a class="nav-link" data-page="fizica">Fizică</a>
+            <a class="nav-link" data-page="sanatate">Sănătate</a>
+            <a class="nav-link" data-page="statistici">Statistici</a>
+            <a class="nav-link" data-page="povesti">Povești</a>
+            <a class="nav-link" data-page="harta">Ecosistem</a>
+            <a class="nav-link" data-page="profil">Profil</a>
+            <div class="user-info" id="userInfo"></div>
+        </div>
+    </nav>
+
+    <!-- Modale -->
+    <div id="storyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle"></h2>
+                <button class="modal-close" id="closeStoryModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 2rem;">
+                    <div style="font-size: 0.85rem; color: var(--accent); margin-bottom: 1rem;">
+                        <i class="fas fa-user"></i> <span id="modalAuthor"></span>
+                    </div>
+                    <div id="modalText" style="line-height: 1.7; white-space: pre-wrap; word-wrap: break-word;"></div>
+                </div>
+                <div style="border-top: 1px solid var(--border); padding-top: 2rem;">
+                    <h3 style="font-size: 1.2rem; margin-bottom: 1rem;"><i class="fas fa-comments"></i> Comentarii</h3>
+                    <div id="commentsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 1.5rem;"></div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <textarea id="commentContent" rows="2" placeholder="Adaugă opinia ta..."></textarea>
+                        <button id="postCommentBtn" class="btn-primary" style="align-self: flex-end;">Trimite</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagina Acasă -->
+    <div id="page-acasa" class="page active container">
+        <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 5rem 2rem; text-align: center; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -50%; left: -10%; width: 400px; height: 400px; background: var(--accent-glow); filter: blur(100px); border-radius: 50%;"></div>
+            <h1 style="font-size: 4rem; font-weight: 800; margin-bottom: 1.5rem; position: relative;">Analiza <span style="color: var(--accent);">AI</span>. Date reale.</h1>
+            <p style="font-size: 1.2rem; color: var(--text-secondary); max-width: 650px; margin: 0 auto; position: relative;">Descoperă impactul inteligenței artificiale în diferite domenii. Votează și contribuie la discuție.</p>
+        </div>
+        <div style="margin-top: 3rem;">
+            <h2 class="page-title"><i class="fas fa-bolt"></i> Știri de ultimă oră</h2>
+            <div class="grid-cazuri" id="trending-grid"></div>
+        </div>
+    </div>
+
+    <!-- Domenii -->
+    <div id="page-mate" class="page container"><h2 class="page-title"><i class="fas fa-square-root-variable"></i> AI în Matematică</h2><div class="grid-cazuri" id="grid-mate"></div></div>
+    <div id="page-info" class="page container"><h2 class="page-title"><i class="fas fa-code"></i> AI în Informatică</h2><div class="grid-cazuri" id="grid-info"></div></div>
+    <div id="page-bio" class="page container"><h2 class="page-title"><i class="fas fa-dna"></i> AI în Biologie</h2><div class="grid-cazuri" id="grid-bio"></div></div>
+    <div id="page-fizica" class="page container"><h2 class="page-title"><i class="fas fa-atom"></i> AI în Fizică</h2><div class="grid-cazuri" id="grid-fizica"></div></div>
+    <div id="page-sanatate" class="page container"><h2 class="page-title"><i class="fas fa-heart-pulse"></i> AI în Sănătate</h2><div class="grid-cazuri" id="grid-sanatate"></div></div>
+
+    <!-- Statistici -->
+    <div id="page-statistici" class="page container">
+        <h2 class="page-title"><i class="fas fa-chart-pie"></i> Statistici Globale</h2>
+        <div class="stats-panel">
+            <div class="stat-card"><div class="stat-number" id="totalVoturi">0</div><div class="stat-label">Voturi totale</div></div>
+            <div class="stat-card"><div class="stat-number" id="totalOpt" style="color: var(--success);">0</div><div class="stat-label">Oportunități</div></div>
+            <div class="stat-card"><div class="stat-number" id="totalProv" style="color: var(--danger);">0</div><div class="stat-label">Provocări</div></div>
+            <div class="stat-card"><div class="stat-number" id="totalStories">0</div><div class="stat-label">Povești</div></div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+            <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem;">
+                <h3 style="margin-bottom: 1rem;">Top utilizatori</h3>
+                <div id="leaderboard-list"></div>
+            </div>
+            <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem;">
+                <h3 style="margin-bottom: 1rem;">Voturi recente</h3>
+                <div id="recent-votes-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Povești -->
+    <div id="page-povesti" class="page container">
+        <h2 class="page-title"><i class="fas fa-feather-pointed"></i> Povești cu AI</h2>
+        <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1rem;">Publică o experiență</h3>
+            <input type="text" id="storyTitle" placeholder="Titlu...">
+            <textarea id="storyContent" rows="4" placeholder="Descrie experiența ta..." style="margin: 1rem 0;"></textarea>
+            <button id="postStoryBtn" class="btn-primary"><i class="fas fa-paper-plane"></i> Publică</button>
+        </div>
+        <div style="margin-bottom: 2rem;">
+            <input type="text" id="searchStories" placeholder="🔍 Caută în povești...">
+        </div>
+        <div class="stories-grid" id="storiesContainer"></div>
+    </div>
+
+    <!-- Hartă ecosistem -->
+    <div id="page-harta" class="page container">
+        <h2 class="page-title"><i class="fas fa-project-diagram"></i> Ecosistemul AI</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Apasă pe un domeniu pentru a vedea curiozități și știri asociate.</p>
+        <div class="harta-container" id="harta-interactiva">
+            <button class="nod-btn" data-topic="deep_learning"><i class="fas fa-network-wired"></i> Deep Learning</button>
+            <button class="nod-btn" data-topic="robotica"><i class="fas fa-robot"></i> Robotică</button>
+            <button class="nod-btn" data-topic="biologie"><i class="fas fa-dna"></i> Biologie</button>
+            <button class="nod-btn" data-topic="medicina"><i class="fas fa-stethoscope"></i> Medicină</button>
+            <button class="nod-btn" data-topic="etica"><i class="fas fa-scale-balanced"></i> Etică</button>
+            <button class="nod-btn" data-topic="arta"><i class="fas fa-palette"></i> Artă generativă</button>
+        </div>
+    </div>
+
+    <!-- Pagină dinamică pentru harta -->
+    <div id="page-topic" class="page container">
+        <h2 class="page-title" id="topicTitle"></h2>
+        <div id="topicFacts" style="margin-bottom: 2rem;"></div>
+        <div id="topicNews" class="grid-cazuri"></div>
+    </div>
+
+    <!-- Profil -->
+    <div id="page-profil" class="page container">
+        <h2 class="page-title"><i class="fas fa-user-circle"></i> Profilul meu</h2>
+        <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
+            <div style="position: relative;">
+                <img src="" alt="avatar" class="profile-avatar-large" id="profileAvatar">
+                <button id="changeAvatarBtn" class="btn-icon" style="position: absolute; bottom: 0; right: 0;"><i class="fas fa-camera"></i></button>
+            </div>
+            <div style="flex:1;">
+                <h2 id="profileName"></h2>
+                <p id="profileEmail"></p>
+                <p style="color: var(--text-secondary); margin-top: 0.5rem;">Membru din <span id="profileDate"></span></p>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+            <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem;">
+                <h3 style="margin-bottom: 1rem;">Voturile mele</h3>
+                <div id="myVotes"></div>
+            </div>
+            <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem;">
+                <h3 style="margin-bottom: 1rem;">Poveștile mele</h3>
+                <div id="myStories"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 AI Verdict — platformă decizională cu inteligență artificială</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        (function() {
+            // Configurare
+            const SUPABASE_URL = "https://gjyaxaodghpzlpuzglcs.supabase.co";
+            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdqeWF4YW9kZ2hwemxwdXpnbGNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTAzMDEsImV4cCI6MjA4Nzc2NjMwMX0.JWLhsT_EchOT-MwPAzl0AOWsVUKvMnQ_LTyNRQOuk6s";
+            const NEWS_API_KEY = "ee743fe703de4296bd928b4aeea54c07"; // cheia ta reală
+
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            // Utilizator curent (demo)
+            let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                currentUser = {
+                    id: 'demo_' + Date.now(),
+                    nume: 'Juriu Concurs',
+                    email: 'juriu@concurs.ro',
+                    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Juriu'
+                };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+
+            // Afișare user info
+            document.getElementById('userInfo').innerHTML = `
+                <button class="btn-icon" id="themeToggle"><i class="fas fa-sun"></i></button>
+                <img src="${currentUser.avatar}" alt="avatar" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.nume}'">
+                <span style="font-weight:600;">${currentUser.nume}</span>
+            `;
+
+            // Toggle temă
+            const themeBtn = document.getElementById('themeToggle');
+            if (localStorage.getItem('theme') === 'light') {
+                document.body.classList.add('light-mode');
+                themeBtn.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+            themeBtn.addEventListener('click', () => {
+                const isLight = document.body.classList.toggle('light-mode');
+                themeBtn.innerHTML = isLight ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            });
+
+            // Navigare SPA
+            const pages = document.querySelectorAll('.page');
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.dataset.page;
+                    pages.forEach(p => p.classList.remove('active'));
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    document.getElementById(`page-${pageId}`).classList.add('active');
+                    link.classList.add('active');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                    if (['mate', 'info', 'bio', 'fizica', 'sanatate'].includes(pageId)) {
+                        loadNewsForDomain(pageId);
+                    } else if (pageId === 'acasa') {
+                        loadTrending();
+                    } else if (pageId === 'statistici') {
+                        loadStats();
+                        loadLeaderboard();
+                        loadRecentVotes();
+                    } else if (pageId === 'povesti') {
+                        loadStories();
+                    } else if (pageId === 'profil') {
+                        loadProfile();
+                    }
+                });
+            });
+
+            // ===== FILTRU ȘTIRI =====
+            const bannedKeywords = [
+                'sex', 'porn', 'nude', 'escort', 'xxx', 'erotic', 'adult', 'dating', 
+                'casino', 'bet', 'gambling', 'drugs', 'cocaine', 'heroin', 'violence', 
+                'gore', 'shock', 'explicit', 'onlyfans', 'camgirl', 'webcam'
+            ];
+
+            function isCleanArticle(title, description) {
+                const text = (title + ' ' + (description || '')).toLowerCase();
+                return !bannedKeywords.some(keyword => text.includes(keyword));
+            }
+
+            // ===== API ȘTIRI =====
+            async function fetchNews(query) {
+                try {
+                    const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&language=en&sortBy=publishedAt&pageSize=12&apiKey=${NEWS_API_KEY}`;
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                    const res = await fetch(proxyUrl);
+                    const data = await res.json();
+                    if (data.status === 'ok' && data.articles) {
+                        // Filtrăm articolele inadecvate
+                        return data.articles.filter(a => 
+                            a.title && a.title !== '[Removed]' && 
+                            a.description && isCleanArticle(a.title, a.description)
+                        );
+                    }
+                    return [];
+                } catch (err) {
+                    console.error(err);
+                    return [];
+                }
+            }
+
+            async function loadNewsForDomain(domain) {
+                const container = document.getElementById(`grid-${domain}`);
+                if (!container) return;
+                container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:4rem;"><div class="loading-spinner"></div><p style="margin-top:1rem;">Se încarcă știri...</p></div>`;
+
+                const queries = {
+                    mate: '("artificial intelligence" OR AI) AND (math OR mathematics OR theorem)',
+                    info: '("artificial intelligence" OR AI) AND (software OR programming OR coding)',
+                    bio: '("artificial intelligence" OR AI) AND (biology OR genetics OR protein)',
+                    fizica: '("artificial intelligence" OR AI) AND (physics OR quantum OR astronomy)',
+                    sanatate: '("artificial intelligence" OR AI) AND (healthcare OR medicine OR diagnosis)'
+                };
+
+                const articles = await fetchNews(queries[domain]);
+                if (articles.length > 0) {
+                    displayArticles(container, articles);
+                } else {
+                    container.innerHTML = '<p style="grid-column:1/-1; text-align:center;">Nu s-au găsit știri recente.</p>';
+                }
+            }
+
+            function loadTrending() {
+                const container = document.getElementById('trending-grid');
+                container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:4rem;"><div class="loading-spinner"></div><p style="margin-top:1rem;">Se încarcă știri...</p></div>`;
+                fetchNews('("artificial intelligence" OR AI OR ChatGPT)').then(articles => {
+                    if (articles.length > 0) displayArticles(container, articles.slice(0, 6));
+                });
+            }
+
+            function displayArticles(container, articles) {
+                let html = '';
+                articles.forEach(article => {
+                    const cazId = article.title.substring(0, 50);
+                    const votCurent = voturiUtilizator[cazId];
+                    const descriere = article.description ? article.description.substring(0, 120) + '...' : 'Detalii pe site-ul sursă.';
+                    const imagine = article.urlToImage ? 
+                        `<img src="${article.urlToImage}" class="card-img" alt="cover" onerror="this.src='https://images.unsplash.com/photo-1677442136019-21780ecad995?w=500&q=80'">` :
+                        `<div class="card-img" style="display:flex; align-items:center; justify-content:center; background:var(--bg-elevated);"><i class="fas fa-newspaper" style="font-size:3rem; color:var(--border);"></i></div>`;
+
+                    html += `
+                    <div class="card-caz" data-caz-id="${cazId}">
+                        ${imagine}
+                        <div class="card-content">
+                            <div class="sursa">${article.source?.name || 'Știri globale'}</div>
+                            <div class="card-header">
+                                <h3><a href="${article.url}" target="_blank" rel="noopener">${article.title.substring(0, 80)}${article.title.length > 80 ? '…' : ''}</a></h3>
+                            </div>
+                            <div class="description">${descriere}</div>
+                            <div class="btn-group">
+                                <button class="btn-vot oportunitate ${votCurent === 'oportunitate' ? 'selected-opt' : ''}" data-vot="oportunitate"><i class="fas fa-thumbs-up"></i> Oportunitate</button>
+                                <button class="btn-vot provocare ${votCurent === 'provocare' ? 'selected-prov' : ''}" data-vot="provocare"><i class="fas fa-thumbs-down"></i> Provocare</button>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+                container.innerHTML = html;
+                attachVoteEvents(container);
+            }
+
+            // ===== VOTURI =====
+            let voturiUtilizator = {};
+
+            async function incarcaVoturiUtilizator() {
+                try {
+                    const { data } = await supabase.from('voturi').select('caz_id, vot').eq('user_id', currentUser.id);
+                    if (data) {
+                        voturiUtilizator = {};
+                        data.forEach(v => voturiUtilizator[v.caz_id] = v.vot);
+                    }
+                } catch (err) {}
+            }
+
+            function attachVoteEvents(container) {
+                container.querySelectorAll('.btn-vot').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const card = btn.closest('.card-caz');
+                        const cazId = card.dataset.cazId;
+                        const vot = btn.dataset.vot;
+
+                        card.querySelectorAll('.btn-vot').forEach(b => b.classList.remove('selected-opt', 'selected-prov'));
+                        btn.classList.add(vot === 'oportunitate' ? 'selected-opt' : 'selected-prov');
+                        voturiUtilizator[cazId] = vot;
+
+                        try {
+                            await supabase.from('voturi').upsert(
+                                { user_id: currentUser.id, caz_id: cazId, vot: vot },
+                                { onConflict: 'user_id, caz_id' }
+                            );
+                        } catch (err) {}
+                    });
+                });
+            }
+
+            // ===== STATISTICI =====
+            async function loadStats() {
+                try {
+                    const { count: total } = await supabase.from('voturi').select('*', { count: 'exact', head: true });
+                    const { count: opt } = await supabase.from('voturi').select('*', { count: 'exact', head: true }).eq('vot', 'oportunitate');
+                    const { count: prov } = await supabase.from('voturi').select('*', { count: 'exact', head: true }).eq('vot', 'provocare');
+                    const { count: stories } = await supabase.from('stories').select('*', { count: 'exact', head: true });
+
+                    document.getElementById('totalVoturi').innerText = total || 0;
+                    document.getElementById('totalOpt').innerText = opt || 0;
+                    document.getElementById('totalProv').innerText = prov || 0;
+                    document.getElementById('totalStories').innerText = stories || 0;
+                } catch (err) {}
+            }
+
+            async function loadLeaderboard() {
+                try {
+                    const { data } = await supabase.from('voturi').select('user_id, users(nume, avatar)');
+                    if (!data) return;
+                    const counts = {};
+                    data.forEach(v => {
+                        if (!counts[v.user_id]) counts[v.user_id] = { nume: v.users?.nume || 'Anonim', avatar: v.users?.avatar, voturi: 0 };
+                        counts[v.user_id].voturi++;
+                    });
+                    const sorted = Object.values(counts).sort((a,b) => b.voturi - a.voturi).slice(0, 5);
+                    let html = '';
+                    sorted.forEach((u, i) => {
+                        html += `
+                        <div style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0; border-bottom:1px solid var(--border);">
+                            <span style="color:var(--text-secondary); font-weight:bold;">#${i+1}</span>
+                            <img src="${u.avatar}" style="width:24px; height:24px; border-radius:50%;">
+                            <span style="flex:1;">${u.nume}</span>
+                            <span style="color:var(--accent); font-weight:bold;">${u.voturi}</span>
+                        </div>`;
+                    });
+                    document.getElementById('leaderboard-list').innerHTML = html || '<p>Fără date</p>';
+                } catch (err) {}
+            }
+
+            async function loadRecentVotes() {
+                try {
+                    const { data } = await supabase.from('voturi').select('*, users(nume)').order('created_at', { ascending: false }).limit(5);
+                    let html = '';
+                    if (data) {
+                        data.forEach(v => {
+                            html += `<div style="padding:0.5rem 0; border-bottom:1px solid var(--border);">
+                                <b>${v.users?.nume || 'Anonim'}</b> a votat <span style="color:${v.vot === 'oportunitate' ? 'var(--success)' : 'var(--danger)'}">${v.vot}</span>
+                            </div>`;
+                        });
+                    }
+                    document.getElementById('recent-votes-list').innerHTML = html || '<p>Nicio activitate recentă</p>';
+                } catch (err) {}
+            }
+
+            // ===== POVEȘTI =====
+            let stories = [];
+            let currentStoryId = null;
+
+            async function loadStories() {
+                try {
+                    const { data } = await supabase.from('stories').select('*, users(nume)').order('created_at', { ascending: false });
+                    stories = data || [];
+                    renderStories(stories);
+                } catch (err) {}
+            }
+
+            function renderStories(list) {
+                const container = document.getElementById('storiesContainer');
+                if (!list.length) {
+                    container.innerHTML = '<p style="color:var(--text-muted); text-align:center;">Nu există povești încă.</p>';
+                    return;
+                }
+                let html = '';
+                list.forEach(s => {
+                    const isMine = s.user_id === currentUser.id;
+                    html += `
+                    <div class="story-card" data-id="${s.id}">
+                        <div class="story-author"><i class="fas fa-user-circle"></i> ${s.users?.nume || 'Anonim'}</div>
+                        <div class="story-title">${s.titlu}</div>
+                        <div class="story-excerpt">${s.continut.substring(0, 100)}${s.continut.length > 100 ? '…' : ''}</div>
+                        <div class="story-meta">
+                            <span><i class="fas fa-comment"></i> 0</span>
+                            <span><i class="fas fa-calendar"></i> ${new Date(s.created_at).toLocaleDateString('ro-RO')}</span>
+                        </div>
+                    </div>`;
+                });
+                container.innerHTML = html;
+
+                container.querySelectorAll('.story-card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        const id = card.dataset.id;
+                        const story = stories.find(s => s.id == id);
+                        if (story) openStoryModal(story);
+                    });
+                });
+            }
+
+            document.getElementById('postStoryBtn').addEventListener('click', async function() {
+                const titlu = document.getElementById('storyTitle').value.trim();
+                const continut = document.getElementById('storyContent').value.trim();
+                if (!titlu || !continut) {
+                    alert('Completează titlul și conținutul.');
+                    return;
+                }
+
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Se publică...';
+
+                try {
+                    await supabase.from('stories').insert([{
+                        user_id: currentUser.id,
+                        titlu,
+                        continut
+                    }]);
+                    document.getElementById('storyTitle').value = '';
+                    document.getElementById('storyContent').value = '';
+                    await loadStories();
+                } catch (err) {
+                    alert('Eroare la publicare.');
+                } finally {
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-paper-plane"></i> Publică';
+                }
+            });
+
+            document.getElementById('searchStories').addEventListener('input', (e) => {
+                const q = e.target.value.toLowerCase();
+                const filtered = stories.filter(s => s.titlu.toLowerCase().includes(q) || s.continut.toLowerCase().includes(q));
+                renderStories(filtered);
+            });
+
+            // ===== MODAL POVEȘTI =====
+            async function openStoryModal(story) {
+                currentStoryId = story.id;
+                document.getElementById('modalTitle').innerText = story.titlu;
+                document.getElementById('modalAuthor').innerText = story.users?.nume || 'Anonim';
+                document.getElementById('modalText').innerText = story.continut;
+                document.getElementById('storyModal').style.display = 'flex';
+
+                await loadComments();
+            }
+
+            document.getElementById('closeStoryModal').addEventListener('click', () => {
+                document.getElementById('storyModal').style.display = 'none';
+            });
+
+            async function loadComments() {
+                if (!currentStoryId) return;
+                try {
+                    const { data } = await supabase
+                        .from('comentarii')
+                        .select('*, users(nume, id)')
+                        .eq('story_id', currentStoryId)
+                        .order('created_at', { ascending: true });
+
+                    let html = '';
+                    if (data && data.length) {
+                        data.forEach(c => {
+                            const isMine = c.users?.id === currentUser.id;
+                            html += `
+                            <div class="comment-item">
+                                <div class="comment-author">${c.users?.nume || 'Anonim'}</div>
+                                <div class="comment-content">${c.continut}</div>
+                                ${isMine ? `<button class="comment-delete" data-id="${c.id}"><i class="fas fa-trash"></i> Șterge</button>` : ''}
+                            </div>`;
+                        });
+                    } else {
+                        html = '<p style="color:var(--text-muted);">Nu există comentarii încă.</p>';
+                    }
+                    document.getElementById('commentsList').innerHTML = html;
+
+                    document.querySelectorAll('.comment-delete').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            const commentId = btn.dataset.id;
+                            if (!confirm('Ștergi comentariul?')) return;
+                            try {
+                                await supabase.from('comentarii').delete().eq('id', commentId).eq('user_id', currentUser.id);
+                                await loadComments();
+                            } catch (err) {
+                                alert('Eroare la ștergere.');
+                            }
+                        });
+                    });
+                } catch (err) {}
+            }
+
+            document.getElementById('postCommentBtn').addEventListener('click', async () => {
+                const content = document.getElementById('commentContent').value.trim();
+                if (!content || !currentStoryId) return;
+
+                try {
+                    await supabase.from('comentarii').insert([{
+                        story_id: currentStoryId,
+                        user_id: currentUser.id,
+                        continut: content
+                    }]);
+                    document.getElementById('commentContent').value = '';
+                    await loadComments();
+                } catch (err) {
+                    alert('Eroare la postarea comentariului.');
+                }
+            });
+
+            // ===== HARTĂ INTERACTIVĂ =====
+            const factsData = {
+                deep_learning: {
+                    titlu: 'Deep Learning',
+                    facts: [
+                        'Rețelele neuronale profunde necesită mii de GPU-uri pentru antrenare.',
+                        'AlphaGo a folosit deep learning pentru a învinge campionii mondiali la Go.'
+                    ]
+                },
+                robotica: {
+                    titlu: 'Robotică',
+                    facts: [
+                        'Roboții colaborativi (coboți) lucrează alături de oameni în fabrici.',
+                        'Boston Dynamics creează roboți cu mișcări extrem de naturale.'
+                    ]
+                },
+                biologie: {
+                    titlu: 'Biologie',
+                    facts: [
+                        'AlphaFold a prezis structura a peste 200 de milioane de proteine.',
+                        'AI-ul accelerează descoperirea de noi medicamente.'
+                    ]
+                },
+                medicina: {
+                    titlu: 'Medicină',
+                    facts: [
+                        'AI-ul poate detecta cancerul mamar din mamografii cu acuratețe mai mare decât medicii.',
+                        'Chirurgia robotică asistată de AI reduce timpul de recuperare.'
+                    ]
+                },
+                etica: {
+                    titlu: 'Etică',
+                    facts: [
+                        'Algoritmii pot perpetua discriminarea rasială sau de gen.',
+                        'Transparența deciziilor AI rămâne o provocare majoră.'
+                    ]
+                },
+                arta: {
+                    titlu: 'Artă generativă',
+                    facts: [
+                        'Modele ca DALL-E și Midjourney pot crea imagini din descrieri text.',
+                        'Se ridică întrebări legate de drepturile de autor și originalitate.'
+                    ]
+                }
+            };
+
+            document.getElementById('harta-interactiva').addEventListener('click', async (e) => {
+                const btn = e.target.closest('.nod-btn');
+                if (!btn) return;
+
+                const topic = btn.dataset.topic;
+                const data = factsData[topic];
+
+                // Ascundem toate paginile și afișăm o pagină temporară
+                pages.forEach(p => p.classList.remove('active'));
+                const topicPage = document.getElementById('page-topic');
+                topicPage.classList.add('active');
+
+                document.getElementById('topicTitle').innerHTML = `<i class="fas fa-${topic === 'deep_learning' ? 'network-wired' : topic === 'robotica' ? 'robot' : topic === 'biologie' ? 'dna' : topic === 'medicina' ? 'stethoscope' : topic === 'etica' ? 'scale-balanced' : 'palette'}"></i> ${data.titlu}`;
+
+                document.getElementById('topicFacts').innerHTML = data.facts.map(f => `<div class="fact-card">${f}</div>`).join('');
+
+                const newsContainer = document.getElementById('topicNews');
+                newsContainer.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:3rem;"><div class="loading-spinner"></div><p>Se încarcă știri...</p></div>';
+
+                const queryMap = {
+                    deep_learning: '("deep learning" OR "neural network")',
+                    robotica: '(robotics OR autonomous robot)',
+                    biologie: '(biology OR bioinformatics)',
+                    medicina: '(medical AI OR healthcare AI)',
+                    etica: '(AI ethics OR bias)',
+                    arta: '(generative art OR AI art)'
+                };
+
+                const articles = await fetchNews(queryMap[topic]);
+                if (articles.length > 0) displayArticles(newsContainer, articles);
+                else newsContainer.innerHTML = '<p style="grid-column:1/-1; text-align:center;">Nu s-au găsit știri recente.</p>';
+            });
+
+            // ===== PROFIL =====
+            async function loadProfile() {
+                document.getElementById('profileName').innerText = currentUser.nume;
+                document.getElementById('profileEmail').innerText = currentUser.email;
+                document.getElementById('profileAvatar').src = currentUser.avatar;
+                document.getElementById('profileDate').innerText = new Date().toLocaleDateString('ro-RO');
+
+                // Voturile mele
+                try {
+                    const { data: votes } = await supabase.from('voturi').select('*').eq('user_id', currentUser.id).limit(10);
+                    let vHtml = '';
+                    if (votes && votes.length) {
+                        votes.forEach(v => {
+                            vHtml += `<div style="padding:0.5rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+                                <span>${v.caz_id.substring(0, 40)}…</span>
+                                <span style="color:${v.vot === 'oportunitate' ? 'var(--success)' : 'var(--danger)'}">${v.vot}</span>
+                            </div>`;
+                        });
+                    } else {
+                        vHtml = '<p>Nu ai votat încă.</p>';
+                    }
+                    document.getElementById('myVotes').innerHTML = vHtml;
+
+                    const { data: myStories } = await supabase.from('stories').select('*').eq('user_id', currentUser.id);
+                    let sHtml = '';
+                    if (myStories && myStories.length) {
+                        myStories.forEach(s => {
+                            sHtml += `<div style="padding:0.5rem 0; border-bottom:1px solid var(--border);"><b>${s.titlu}</b></div>`;
+                        });
+                    } else {
+                        sHtml = '<p>Nu ai publicat povești.</p>';
+                    }
+                    document.getElementById('myStories').innerHTML = sHtml;
+                } catch (err) {}
+            }
+
+            document.getElementById('changeAvatarBtn').addEventListener('click', () => {
+                const newAvatar = prompt('Introdu URL-ul noii poze de profil:');
+                if (newAvatar) {
+                    currentUser.avatar = newAvatar;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    document.getElementById('profileAvatar').src = newAvatar;
+                    document.querySelector('.user-info img').src = newAvatar;
+                }
+            });
+
+            // Inițializare
+            (async () => {
+                await incarcaVoturiUtilizator();
+                loadTrending();
+            })();
+        })();
+    </script>
+</body>
+</html>
