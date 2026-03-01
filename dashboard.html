@@ -121,8 +121,6 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            flex-wrap: wrap;
-            gap: 1rem;
         }
         body.light-mode .navbar { background: rgba(255, 255, 255, 0.8); }
 
@@ -136,6 +134,23 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        /* Buton hamburger - vizibil doar pe mobil */
+        .menu-toggle {
+            display: none;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .menu-toggle:hover {
+            background: var(--bg-elevated);
+            color: var(--accent);
         }
 
         .nav-links {
@@ -180,7 +195,6 @@
             border: 2px solid var(--accent);
             object-fit: cover;
             cursor: pointer;
-            alt: "avatar utilizator";
         }
         .user-info span {
             cursor: pointer;
@@ -517,7 +531,6 @@
             height: 24px;
             border-radius: 50%;
             object-fit: cover;
-            alt: "avatar autor";
         }
         .story-title {
             font-size: 1.1rem;
@@ -614,7 +627,6 @@
             height: 24px;
             border-radius: 50%;
             object-fit: cover;
-            alt: "avatar comentator";
         }
         .comment-date { font-size: 0.7rem; color: var(--text-muted); margin-left: auto; }
         .comment-content {
@@ -823,16 +835,40 @@
         @media (max-width: 768px) {
             .navbar {
                 padding: 0.75rem 1rem;
-                flex-direction: column;
-                align-items: stretch;
+                flex-wrap: wrap;
             }
-            .logo { margin-bottom: 0.5rem; text-align: center; }
-            .nav-links { justify-content: center; margin-bottom: 0.5rem; }
+            .menu-toggle {
+                display: block;
+                order: 2;
+            }
+            .logo {
+                order: 1;
+            }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                order: 3;
+                margin-top: 1rem;
+                gap: 0.5rem;
+            }
+            .nav-links.show {
+                display: flex;
+            }
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 0.8rem;
+                font-size: 1.1rem;
+            }
             .user-info {
                 margin-left: 0;
                 padding-left: 0;
                 border-left: none;
                 justify-content: center;
+                width: 100%;
+                order: 4;
+                margin-top: 0.5rem;
             }
             .container { padding: 1rem; }
             .page-title { font-size: 1.5rem; }
@@ -853,7 +889,8 @@
 <body>
     <nav class="navbar">
         <div class="logo"><i class="fas fa-microchip"></i> AI VERDICT</div>
-        <div class="nav-links">
+        <button class="menu-toggle" id="menuToggle" aria-label="Meniu"><i class="fas fa-bars"></i></button>
+        <div class="nav-links" id="navLinks">
             <a class="nav-link" data-page="acasa" data-i18n="home">Acasă</a>
             <a class="nav-link" data-page="educatie" data-i18n="education">Educație & Inovație</a>
             <a class="nav-link" data-page="medicina" data-i18n="medicine">Medicină</a>
@@ -1380,6 +1417,31 @@
         const navPoints = document.getElementById('navPoints');
         const backToTop = document.getElementById('backToTop');
         const logoutBtn = document.getElementById('logoutBtn');
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinksContainer = document.getElementById('navLinks');
+
+        // Toggle meniu mobil
+        menuToggle.addEventListener('click', () => {
+            navLinksContainer.classList.toggle('show');
+            const icon = menuToggle.querySelector('i');
+            if (navLinksContainer.classList.contains('show')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+
+        // Închide meniul când se face click pe un link (pe mobil)
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                navLinksContainer.classList.remove('show');
+                const icon = menuToggle.querySelector('i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            });
+        });
 
         // Inițializare temă
         if (localStorage.getItem('theme') === 'light') {
@@ -1522,21 +1584,31 @@
                 return cached.data;
             }
 
-            try {
-                const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&language=ro&sortBy=publishedAt&pageSize=8&apiKey=${NEWS_API_KEY}`;
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-                const res = await fetch(proxyUrl);
-                const data = await res.json();
-                if (data.status === 'ok' && data.articles) {
-                    const clean = data.articles.filter(a => a.title && a.title !== '[Removed]' && a.description);
-                    newsCache.set(cacheKey, { timestamp: Date.now(), data: clean });
-                    return clean;
+            // Listă de proxy-uri CORS (încearcă pe rând)
+            const proxies = [
+                'https://api.allorigins.win/raw?url=',
+                'https://corsproxy.io/?',
+                'https://api.codetabs.com/v1/proxy?quest='
+            ];
+
+            for (const proxy of proxies) {
+                try {
+                    const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&language=ro&sortBy=publishedAt&pageSize=8&apiKey=${NEWS_API_KEY}`;
+                    const proxyUrl = proxy + encodeURIComponent(url);
+                    const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(5000) }); // timeout 5s
+                    if (!res.ok) continue;
+                    const data = await res.json();
+                    if (data.status === 'ok' && data.articles) {
+                        const clean = data.articles.filter(a => a.title && a.title !== '[Removed]' && a.description);
+                        newsCache.set(cacheKey, { timestamp: Date.now(), data: clean });
+                        return clean;
+                    }
+                } catch (err) {
+                    console.warn(`Proxy ${proxy} failed:`, err);
+                    // continuă cu următorul proxy
                 }
-                return [];
-            } catch (err) {
-                console.error(err);
-                return [];
             }
+            return []; // dacă toate proxy-urile eșuează
         }
 
         async function loadGroupedNews(containerId, queries) {
