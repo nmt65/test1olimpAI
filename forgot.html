@@ -367,7 +367,9 @@
 
             try {
                 const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.origin + '/change-password.html'
+                    // Extrage calea până la directorul unde se află forgot.html (de ex. /test1olimpAI)
+const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+redirectTo: window.location.origin + basePath + '/change-password.html'
                 });
 
                 if (error) {
@@ -391,4 +393,5 @@
     })();
     </script>
 </body>
+
 </html>
