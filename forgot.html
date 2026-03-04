@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Design Premium - Dark & Light Mode */
         :root {
             --bg-base: #0a0c10;
             --bg-surface: #111318;
@@ -260,7 +259,6 @@
     </style>
 </head>
 <body>
-    <!-- Animație spectaculoasă de particule -->
     <div class="bg-animation">
         <div class="particle"></div>
         <div class="particle"></div>
@@ -314,13 +312,11 @@
             console.error('Supabase init failed:', e);
         }
 
-        // Elemente DOM
         const emailInput = document.getElementById('email');
         const resetBtn = document.getElementById('reset-btn');
         const messageDiv = document.getElementById('message');
         const btnText = document.getElementById('btnText');
 
-        // Setare text static (română)
         const texts = {
             title: "Resetează parola",
             subtitle: "Introdu email-ul tău și vom trimite un link de resetare",
@@ -331,7 +327,6 @@
             invalidEmail: "❌ Te rugăm să introduci un email valid."
         };
 
-        // Actualizare UI (dacă e nevoie)
         document.getElementById('title').innerText = texts.title;
         document.getElementById('subtitle').innerText = texts.subtitle;
         btnText.innerText = texts.btnText;
@@ -366,8 +361,12 @@
             setLoading(true);
 
             try {
+                // Construiește dinamic calea corectă (inclusiv subdirector, dacă există)
+                const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+                const redirectTo = window.location.origin + basePath + '/change-password.html';
+
                 const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.origin + '/change-password.html'
+                    redirectTo: redirectTo
                 });
 
                 if (error) {
@@ -384,13 +383,10 @@
             }
         });
 
-        // Enter key support
         emailInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') resetBtn.click();
         });
     })();
     </script>
 </body>
-
 </html>
-
